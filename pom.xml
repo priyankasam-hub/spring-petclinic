@@ -437,4 +437,18 @@
       </build>
     </profile>
   </profiles>
+  
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/priyankasam-hub/spring-petclinic</url>
+    </repository>
+    <snapshotRepository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/priyankasam-hub/spring-petclinic</url>
+    </snapshotRepository>
+  </distributionManagement>
+
 </project>
