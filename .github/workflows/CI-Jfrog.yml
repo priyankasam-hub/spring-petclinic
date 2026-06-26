@@ -1,0 +1,65 @@
+# CI: Build -> Test -> Publish to JFrog Artifactory
+# Save as: .github/workflows/ci-jfrog.yml
+#
+# PREREQUISITES (set in GitHub repo > Settings > Secrets and variables > Actions):
+#   - Variable  JF_URL          = https://trialyd97mj.jfrog.io
+#   - Secret    JF_ACCESS_TOKEN = your JFrog Reference token
+# Deploy target repo: petclinic-maven (local Maven repo)
+
+name: CI - Build, Test & Publish to JFrog
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build, test and publish to JFrog
+    runs-on: ubuntu-latest
+    env:
+      JFROG_CLI_BUILD_NAME: petclinic
+      JFROG_CLI_BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Set up JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Check JFrog connection
+        run: jf rt ping
+
+      # Deploy target = your local repo. Dependencies resolve from Maven Central
+      # (the default), so no resolve repo is configured here.
+      - name: Configure Maven deploy repo
+        run: |
+          jf mvnc \
+            --repo-deploy-releases  petclinic-maven \
+            --repo-deploy-snapshots petclinic-maven
+
+      # ---- STEP 1: build + run all tests ----
+      - name: Build and test
+        run: jf mvn --batch-mode verify
+
+      # ---- STEP 2: deploy artifact + publish build info to JFrog ----
+      #  Skipped on pull requests; only publishes on push/merge to main.
+      - name: Publish to JFrog Artifactory
+        if: github.event_name != 'pull_request'
+        run: |
+          jf mvn --batch-mode deploy -DskipTests
+          jf rt build-add-git
+          jf rt build-collect-env
+          jf rt build-publish
