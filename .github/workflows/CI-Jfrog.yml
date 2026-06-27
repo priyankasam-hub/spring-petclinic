@@ -46,7 +46,12 @@ jobs:
       # (the default), so no resolve repo is configured here.
       - name: Configure Maven deploy repo
         run: |
+          jf c add jfrog-server \
+            --url="${{ vars.JF_URL }}" \
+            --access-token="${{ secrets.JF_ACCESS_TOKEN }}" \
+            --interactive=false
           jf mvnc \
+            --server-id-deploy=jfrog-server \
             --repo-deploy-releases  petclinic-maven \
             --repo-deploy-snapshots petclinic-maven
 
