@@ -7,7 +7,7 @@
 #   - Secret    JF_ACCESS_TOKEN = your JFrog Reference token
 # Deploy target repo: petclinic-maven (local Maven repo)
 
-name: CI - Build, Test & Publish to JFrog
+name: JFrog Pipeline
 
 on:
   push:
