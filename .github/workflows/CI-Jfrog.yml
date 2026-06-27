@@ -39,8 +39,8 @@ jobs:
           JF_URL: ${{ vars.JF_URL }}
           JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
 
-      - name: Check JFrog connection
-        run: jf rt ping
+      - name: Verify JFrog authentication
+        run: jf rt curl -XGET "/api/repositories/petclinic-maven"
 
       # Deploy target = your local repo. Dependencies resolve from Maven Central
       # (the default), so no resolve repo is configured here.
